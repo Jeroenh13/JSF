@@ -4,6 +4,9 @@
  * and open the template in the editor.
  */
 package shellscript;
+import java.util.Properties;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
 
 /**
  *
@@ -15,17 +18,47 @@ public class ShellScript {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        for(String env: args)
-        {
-            String value = System.getenv(env);
-            if(value != null)
+        
+        Properties prop = new Properties();
+        OutputStream output = null;
+        
+        try{
+            output = new FileOutputStream("config.properties");
+            
+            for(String env: args)
             {
-                System.out.format("%s=%s%n",env,value);
+                String value = System.getenv(env);
+                if(value != null)
+                {
+                    System.out.format("%s=%s%n",env,value);
+                    prop.setProperty(env,String.format("%s",value));
+                }
+                else
+                {
+                    System.out.format("%s is" + " not assigned.%n",env);
+                    prop.setProperty("values",String.format("%s",env));
+                }
             }
-            else
+            prop.store(output,null);
+        }
+        catch(Exception e)
+        {
+            System.err.println("error" + e.getMessage());
+        }
+        finally
+        {
+            if(output!=null)
             {
-                System.out.format("%s is" + " not assigned.%n",env);
+                try{
+                output.close();
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
         }
-    }
+  }
 }
+
+
