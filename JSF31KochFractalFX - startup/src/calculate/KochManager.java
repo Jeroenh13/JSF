@@ -16,43 +16,76 @@ import timeutil.TimeStamp;
  *
  * @author jsf3
  */
-public class KochManager implements Observer
+public class KochManager
 {
-    private JSF31KochFractalFX application;
-    private KochFractal koch;
-    private ArrayList<Edge> edges;
+    public JSF31KochFractalFX application;
+    public ArrayList<Edge> edges;
     private TimeStamp ts;
     private TimeStamp ts2;
+    private int counter = 0;
+    private Thread tLeft;
+    private Thread tRight;
+    private Thread tBottom;
+    
+    private KochFractal kochLeft;
+    private KochFractal kochRight;
+    private KochFractal kochBottom;
     
     public KochManager(JSF31KochFractalFX application)
     {
         this.application = application;
-        koch = new KochFractal();
-        koch.addObserver(this);
-        edges = new ArrayList<Edge>();
-    }
-    
-    @Override
-    public void update(Observable o, Object arg) {
-        edges.add((Edge)arg);
-    }
-    
+        kochLeft = new KochFractal();
+        kochRight = new KochFractal();
+        kochBottom = new KochFractal();
+        edges = new ArrayList<>();
+    }    
 
-    public void changeLevel(int nxt) {
-        koch.setLevel(nxt);
+    public synchronized void changeLevel(int nxt) {
+        changeLevels(nxt);
         edges.clear();
         ts2 = new TimeStamp();
         ts2.setBegin();
-        koch.generateBottomEdge();
-        koch.generateLeftEdge();
-        koch.generateRightEdge();
+        kochRunnable krl = new kochRunnable("Left",this, kochLeft);
+        kochRunnable krb = new kochRunnable("Bottom",this, kochRight);
+        kochRunnable krr = new kochRunnable("Right",this, kochBottom);
+        tLeft = new Thread(krl);
+        tRight = new Thread(krr);
+        tBottom = new Thread(krb);
+        startThreads();        
         ts2.setEnd();
-        drawEdges();
-        application.setTextNrEdges(String.valueOf(edges.size()));
+        application.setTextNrEdges(String.valueOf(getEdges()));
         application.setTextCalc(ts2.toString());
     }
+    
+    void changeLevels(int nxt)
+    {
+        kochLeft.setLevel(nxt);
+        kochRight.setLevel(nxt);
+        kochBottom.setLevel(nxt);
+    }
+    
+    
+    int getEdges()
+    {
+        return kochLeft.getNrOfEdges() + kochRight.getNrOfEdges() + kochBottom.getNrOfEdges();
+    }
+    
+    public synchronized void addEdge(Edge e)
+    {
+        edges.add(e);
+    }
+    
+    public synchronized void addCount()
+    {
+        counter++;
+        if(counter==3)
+        {
+            application.requestDrawEdges();
+            counter = 0;
+        }
+    }
 
-    public void drawEdges() {
+    public synchronized void drawEdges() {
         ts = new TimeStamp();
         ts.setBegin();
         application.clearKochPanel();
@@ -62,6 +95,11 @@ public class KochManager implements Observer
         }
         ts.setEnd();
         application.setTextDraw(ts.toString());
+    }
 
+    private void startThreads() {
+        tLeft.start();
+        tRight.start();
+        tBottom.start();
     }
 }
