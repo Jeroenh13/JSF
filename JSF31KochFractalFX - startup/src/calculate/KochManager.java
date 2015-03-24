@@ -45,13 +45,17 @@ public class KochManager
         edges.clear();
         ts2 = new TimeStamp();
         ts2.setBegin();
+        //create runnables and threads
         kochRunnable krl = new kochRunnable("Left",this, kochLeft);
         kochRunnable krb = new kochRunnable("Bottom",this, kochRight);
         kochRunnable krr = new kochRunnable("Right",this, kochBottom);
         tLeft = new Thread(krl);
         tRight = new Thread(krr);
         tBottom = new Thread(krb);
-        startThreads();        
+        
+        //start the threads
+        startThreads();       
+        
         ts2.setEnd();
         application.setTextNrEdges(String.valueOf(getEdges()));
         application.setTextCalc(ts2.toString());
@@ -98,6 +102,9 @@ public class KochManager
     }
 
     private void startThreads() {
+        tLeft.setName("Left");
+        tRight.setName("Right");
+        tBottom.setName("Bottom");
         tLeft.start();
         tRight.start();
         tBottom.start();
