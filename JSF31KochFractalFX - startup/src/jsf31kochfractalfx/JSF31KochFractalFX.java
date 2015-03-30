@@ -204,11 +204,23 @@ public class JSF31KochFractalFX extends Application {
     }
     
     public void setTextNrEdges(String text) {
-        labelNrEdgesText.setText(text);
+        final String t = text;
+        Platform.runLater(new Runnable(){
+            @Override
+            public void run() {
+                labelNrEdgesText.setText(t);
+            }
+        });
     }
     
     public void setTextCalc(String text) {
-        labelCalcText.setText(text);
+        final String t = text;
+        Platform.runLater(new Runnable(){
+            @Override
+            public void run() {
+                labelCalcText.setText(t);
+            }
+        });
     }
     
     public void setTextDraw(String text) {

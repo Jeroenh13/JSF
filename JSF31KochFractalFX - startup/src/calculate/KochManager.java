@@ -57,18 +57,9 @@ public class KochManager
         tBottom = new Thread(krb);
         
         //start the threads
-        startThreads();       
+        startThreads();    
         
-        //ts2.setEnd();
-        try {
-            /*
-            tLeft.join();
-            tRight.join();*/
-            tBottom.join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        drawStuff();
+        //drawStuff();
     }
     
     void changeLevels(int nxt)
@@ -95,7 +86,7 @@ public class KochManager
         if(counter==3)
         {
             ts2.setEnd();
-            //drawStuff();
+            drawStuff();
             application.requestDrawEdges();
             counter = 0;
         }
