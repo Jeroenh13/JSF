@@ -6,6 +6,8 @@
 package calculate;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.BrokenBarrierException;
@@ -38,12 +40,18 @@ public class KochManager
     private KochFractal kochLeft;
     private KochFractal kochRight;
     private KochFractal kochBottom;
+    ExecutorService pool = Executors.newFixedThreadPool(4);
     
-    CyclicBarrier cb = new CyclicBarrier(3);
+    Future<ArrayList<Edge>> fut;
+    Future<ArrayList<Edge>> fut2;
+    Future<ArrayList<Edge>> fut3;
+        
     
-    kochRunnable krl;
-    kochRunnable krr;
-    kochRunnable krb;
+    CyclicBarrier cb = new CyclicBarrier(4);
+    
+    kochCallable krl;
+    kochCallable krr;
+    kochCallable krb;
     
     public KochManager(JSF31KochFractalFX application)
     {
@@ -54,50 +62,44 @@ public class KochManager
         edges = new ArrayList<>();
     }    
 
-    public synchronized void changeLevel(int nxt){
+    public void changeLevel(int nxt){
         changeLevels(nxt);
         edges.clear();
         ts2 = new TimeStamp();
         ts2.setBegin();
         
-        //create runnables and pool
-        krl = new kochRunnable("Left",this, kochLeft,cb);
-        krb = new kochRunnable("Bottom",this, kochRight,cb);
-        krr = new kochRunnable("Right",this, kochBottom,cb);
-        ExecutorService pool = Executors.newFixedThreadPool(3);
+        krl = new kochCallable("Left",this, kochLeft);
+        krr = new kochCallable("Bottom",this, kochRight);
+        krb = new kochCallable("Right",this, kochBottom);
         
         
-        Future<ArrayList<Edge>> fut = pool.submit(krl);
-        Future<ArrayList<Edge>> fut2 = pool.submit(krb);
-        Future<ArrayList<Edge>> fut3 = pool.submit(krr);
-        
+        fut = pool.submit(krl);
+        fut2 = pool.submit(krr);
+        fut3 = pool.submit(krb);
+        pool.execute(new Runnable(){
+            @Override
+            public void run()
+            {
+                try{
+                    cb.await();
+                    Thread.sleep(20);
+                } catch (InterruptedException | BrokenBarrierException ex) {
+                    Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                ts2.setEnd();
+                application.setTextCalc(ts2.toString());
+                application.requestDrawEdges();
+            }
+        });
+    }
+    
+    public void Wait()
+    {
         try {
-            edges.addAll(fut.get());
-        } catch (InterruptedException ex) {
-            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
+            cb.await();
+        } catch (InterruptedException | BrokenBarrierException ex ) {
             Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
         }
-        try {
-            edges.addAll(fut2.get());
-        } catch (InterruptedException ex) {
-            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            edges.addAll(fut3.get());
-        } catch (InterruptedException ex) {
-            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        pool.shutdown();
-        ts2.setEnd();
-        application.setTextCalc(ts2.toString());
-        application.setTextNrEdges(String.valueOf(getEdges()));
-        application.requestDrawEdges();
     }
     
     void changeLevels(int nxt)
@@ -113,7 +115,9 @@ public class KochManager
         return kochLeft.getNrOfEdges();
     }
 
-    public synchronized void drawEdges() {
+    public void drawEdges() {
+        updateEdgeList();
+        application.setTextNrEdges(String.valueOf(edges.size()));
         ts = new TimeStamp();
         ts.setBegin();
         application.clearKochPanel();
@@ -123,5 +127,15 @@ public class KochManager
         }
         ts.setEnd();
         application.setTextDraw(ts.toString());
+    }
+
+    private void updateEdgeList() {
+        try {
+            edges.addAll(fut.get());
+            edges.addAll(fut2.get());
+            edges.addAll(fut3.get());
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

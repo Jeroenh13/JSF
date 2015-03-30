@@ -15,26 +15,24 @@ import java.util.concurrent.CyclicBarrier;
  *
  * @author jsf3
  */
-public class kochRunnable implements Callable,Observer
+public class kochCallable implements Callable,Observer
 {
     KochFractal koch;
     private String side;
     private KochManager km;
     private ArrayList<Edge> edges;
-    CyclicBarrier cb;
     
-    public kochRunnable(String side, KochManager km, KochFractal koch,CyclicBarrier cb)
+    public kochCallable(String side, KochManager km, KochFractal koch)
     {
         this.koch = koch;
         this.side = side;
-        this.cb = cb;
         this.km = km;
         koch.addObserver(this);
         edges = new ArrayList<>();
     }
     
     @Override
-    public synchronized void update(Observable o, Object arg) {
+    public void update(Observable o, Object arg) {
         edges.add((Edge) arg);
     }
 
@@ -43,17 +41,17 @@ public class kochRunnable implements Callable,Observer
         if(side.equals("Left"))
         {
             koch.generateLeftEdge();
-            cb.await();
+            km.Wait();
         }
         else if(side.equals("Right"))
         {
             koch.generateRightEdge();
-            cb.await();
+            km.Wait();
         }
         else if(side.equals("Bottom"))
         {
             koch.generateBottomEdge();
-            cb.await();
+            km.Wait();
         }
         return edges;
     }
