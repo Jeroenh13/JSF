@@ -8,6 +8,8 @@ package calculate;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jsf31kochfractalfx.JSF31KochFractalFX;
 import timeutil.TimeStamp;
 
@@ -58,8 +60,15 @@ public class KochManager
         startThreads();       
         
         //ts2.setEnd();
-        
-        
+        try {
+            /*
+            tLeft.join();
+            tRight.join();*/
+            tBottom.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        drawStuff();
     }
     
     void changeLevels(int nxt)
@@ -86,8 +95,7 @@ public class KochManager
         if(counter==3)
         {
             ts2.setEnd();
-            application.setTextCalc(ts2.toString());
-            application.setTextNrEdges(String.valueOf(getEdges()));
+            //drawStuff();
             application.requestDrawEdges();
             counter = 0;
         }
@@ -113,5 +121,10 @@ public class KochManager
         tRight.start();
         tBottom.start();
         
+    }
+    
+    private void drawStuff(){
+        application.setTextCalc(ts2.toString());
+        application.setTextNrEdges(String.valueOf(getEdges()));
     }
 }
