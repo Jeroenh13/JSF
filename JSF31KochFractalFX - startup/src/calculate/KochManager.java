@@ -45,6 +45,7 @@ public class KochManager
         edges.clear();
         ts2 = new TimeStamp();
         ts2.setBegin();
+        
         //create runnables and threads
         kochRunnable krl = new kochRunnable("Left",this, kochLeft);
         kochRunnable krb = new kochRunnable("Bottom",this, kochRight);
@@ -56,9 +57,9 @@ public class KochManager
         //start the threads
         startThreads();       
         
-        ts2.setEnd();
+        //ts2.setEnd();
         application.setTextNrEdges(String.valueOf(getEdges()));
-        application.setTextCalc(ts2.toString());
+        
     }
     
     void changeLevels(int nxt)
@@ -84,6 +85,8 @@ public class KochManager
         counter++;
         if(counter==3)
         {
+            ts2.setEnd();
+            application.setTextCalc(ts2.toString());
             application.requestDrawEdges();
             counter = 0;
         }
@@ -108,5 +111,6 @@ public class KochManager
         tLeft.start();
         tRight.start();
         tBottom.start();
+        
     }
 }
