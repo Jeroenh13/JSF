@@ -58,7 +58,7 @@ public class KochManager
         startThreads();       
         
         //ts2.setEnd();
-        application.setTextNrEdges(String.valueOf(getEdges()));
+        
         
     }
     
@@ -72,7 +72,7 @@ public class KochManager
     
     int getEdges()
     {
-        return kochLeft.getNrOfEdges() + kochRight.getNrOfEdges() + kochBottom.getNrOfEdges();
+        return kochLeft.getNrOfEdges();
     }
     
     public synchronized void addEdge(Edge e)
@@ -87,6 +87,7 @@ public class KochManager
         {
             ts2.setEnd();
             application.setTextCalc(ts2.toString());
+            application.setTextNrEdges(String.valueOf(getEdges()));
             application.requestDrawEdges();
             counter = 0;
         }
