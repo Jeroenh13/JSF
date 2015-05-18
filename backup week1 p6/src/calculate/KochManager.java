@@ -6,18 +6,6 @@
 package calculate;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.concurrent.Task;
 import javafx.scene.paint.Color;
 import jsf31kochfractalfx.JSF31KochFractalFX;
@@ -51,31 +39,38 @@ public class KochManager
         kochLeft = new KochFractal();
         kochRight = new KochFractal();
         kochBottom = new KochFractal();
+        
         edges = new ArrayList<>();
     }    
 
     public void changeLevel(int nxt){
-        application.UpdateLeft(taskLeft);
-        //application.UpdateBottom(taskBottom);
-        //application.UpdateRight(taskRight);
-        changeLevels(nxt);
+        tryCancel();
         edges.clear();
-        ts = new TimeStamp();
-        ts.setBegin();
-        ts2 = new TimeStamp();
-        ts2.setBegin();
         
+        cnt = 0;
         taskLeft = new kochTask("Left",this, kochLeft);
         taskBottom = new kochTask("Bottom",this, kochRight);
         taskRight = new kochTask("Right",this, kochBottom);
+        
+        application.UpdateLeft(taskLeft);
+        application.UpdateBottom(taskBottom);
+        application.UpdateRight(taskRight);
+        
+        ts2 = new TimeStamp();
+        ts2.setBegin();
+        
         new Thread(taskLeft).start();
         new Thread(taskBottom).start();
         new Thread(taskRight).start();
-     
+        
+        changeLevels(nxt);
+        
+        ts = new TimeStamp();
+        ts.setBegin();
+        
          ts2.setEnd();
          application.setTextCalc(ts2.toString());
          application.requestDrawEdges();
-         taskLeft.cancel();
     }
    
     public synchronized void add()
@@ -84,7 +79,6 @@ public class KochManager
         if(cnt >=3){
             ts.setEnd();
             application.requestDrawEdges();
-            cnt = 0;
         }
     }
     
@@ -100,7 +94,7 @@ public class KochManager
         return kochLeft.getNrOfEdges();
     }
 
-    public void drawEdges() {
+    public synchronized void drawEdges() {
         application.setTextNrEdges(String.valueOf(edges.size()));
         ts = new TimeStamp();
         ts.setBegin();
@@ -116,7 +110,20 @@ public class KochManager
     public synchronized void updateEdges(Edge e)
     {
         edges.add(e);
-        Edge e1 = new Edge(e.X1,e.X2,e.Y1,e.Y2,Color.WHITE);
-        application.drawOneEdge(e);
+        Edge e1 = new Edge(e.X1,e.Y1,e.X2,e.Y2,Color.WHITE);
+        application.drawOneEdge(e1);
+    }
+
+    public void tryCancel() {
+        try{
+            taskLeft.cancel();
+            taskRight.cancel();
+            taskBottom.cancel();
+            taskLeft = null;
+            taskRight = null;
+            taskBottom = null;
+        }
+        catch(NullPointerException  ex){
+        }
     }
 }

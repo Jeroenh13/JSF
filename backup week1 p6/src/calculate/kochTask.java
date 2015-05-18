@@ -19,9 +19,8 @@ public class kochTask extends Task<ArrayList<Edge>> implements Observer {
     KochFractal koch;
     private String side;
     private KochManager km;
-    private ArrayList<Edge> edges;
-    
-    private int edgeCount = 0;
+    private int edgeCount;
+    private int sleepTime;
     
     public kochTask(String side, KochManager km, KochFractal koch)
     {
@@ -29,39 +28,48 @@ public class kochTask extends Task<ArrayList<Edge>> implements Observer {
         this.side = side;
         this.km = km;
         koch.addObserver(this);
-        edges = new ArrayList<>();
+        edgeCount = 0;
     }
+    
     @Override
     protected ArrayList<Edge> call() throws Exception {
         if(side.equals("Left"))
         {
             koch.generateLeftEdge();
             km.add();
+            sleepTime = 5;
         }
         else if(side.equals("Right"))
         {
             koch.generateRightEdge();
             km.add();
+            sleepTime = 20;
         }
         else if(side.equals("Bottom"))
         {
             koch.generateBottomEdge();
             km.add();
+            sleepTime = 15;
         }
-        return edges;
-    }
-
-    @Override
-    public void update(Observable o, Object arg) {
-        edges.add((Edge) arg);
-        edgeCount++;
-        km.updateEdges((Edge)arg);
-        try{
-            Thread.sleep(20);
-        }
-        catch(InterruptedException ex){
-            
-        }
+        return null;
     }
     
+    @Override
+    public void update(Observable o, Object arg) {
+        if(isCancelled())
+        {
+            koch.cancel();
+        }
+        else{
+            edgeCount++;
+            km.updateEdges((Edge)arg);
+            updateProgress(edgeCount,koch.getNrOfEdges()/3);
+            updateMessage("Number of edges: " + Integer.toString(edgeCount));
+            try{
+                Thread.sleep(sleepTime);
+            }
+            catch(InterruptedException ex){
+            }
+        }
+    }
 }

@@ -276,7 +276,7 @@ public class JSF31KochFractalFX extends Application {
             @Override
             public void run(){
                 progressLeft.progressProperty().bind(t.progressProperty());
-                edgesLeft.setText(t.getMessage());
+                edgesLeft.textProperty().bind(t.messageProperty());
             }
         });
     }
@@ -288,7 +288,7 @@ public class JSF31KochFractalFX extends Application {
             @Override
             public void run(){
                 progressBottom.progressProperty().bind(t.progressProperty());
-                edgesBottom.setText(t.getMessage());
+                edgesBottom.textProperty().bind(t.messageProperty());
             }
         });
     }
@@ -300,12 +300,12 @@ public class JSF31KochFractalFX extends Application {
             @Override
             public void run(){
                 progressRight.progressProperty().bind(t.progressProperty());
-                edgesRight.setText(t.getMessage());
+                edgesRight.textProperty().bind(t.messageProperty());
             }
         });
     }
     
-    public void drawOneEdge(Edge e)
+    public synchronized void drawOneEdge(Edge e)
     {
         final Edge e2 = e;
         Platform.runLater(new Runnable(){
