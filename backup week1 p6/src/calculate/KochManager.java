@@ -50,6 +50,7 @@ public class KochManager
     }    
 
     public void changeLevel(int nxt){
+        //cancelled de tasks
         if(taskLeft != null)
         {
             taskLeft.cancel();
@@ -58,6 +59,7 @@ public class KochManager
         }
         edges.clear();
         
+        //maakt nieuwe fractals aangezien ze gecancelled zijn
         kochLeft = new KochFractal();
         kochRight = new KochFractal();
         kochBottom = new KochFractal();
@@ -66,10 +68,12 @@ public class KochManager
         
         cnt = 0;
         
+        //maakt niet tasks
         taskLeft = new kochTask("Left",this, kochLeft);
         taskBottom = new kochTask("Bottom",this, kochRight);
         taskRight = new kochTask("Right",this, kochBottom);
         
+        //update de gui, bindt de progress en label aan de messages van de task
         application.UpdateLeft(taskLeft);
         application.UpdateBottom(taskBottom);
         application.UpdateRight(taskRight);
@@ -77,6 +81,7 @@ public class KochManager
         ts2 = new TimeStamp();
         ts2.setBegin();
         
+        //nieuwe threads voor de tasks
         new Thread(taskLeft,"ThLeft").start();
         new Thread(taskBottom,"ThBottom").start();
         new Thread(taskRight,"ThRight").start();
