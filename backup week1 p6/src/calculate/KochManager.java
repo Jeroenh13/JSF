@@ -6,6 +6,8 @@
 package calculate;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.concurrent.Task;
 import javafx.scene.paint.Color;
 import jsf31kochfractalfx.JSF31KochFractalFX;
@@ -23,13 +25,17 @@ public class KochManager
     private TimeStamp ts;
     private TimeStamp ts2;
     
-    private final KochFractal kochLeft;
-    private final KochFractal kochRight;
-    private final KochFractal kochBottom;
+    private KochFractal kochLeft;
+    private KochFractal kochRight;
+    private KochFractal kochBottom;
     
     private Task taskLeft;
     private Task taskBottom;
     private Task taskRight;
+    
+    private Thread t1;
+    private Thread t2;
+    private Thread t3;
     
     private int cnt = 0;
     
@@ -44,10 +50,22 @@ public class KochManager
     }    
 
     public void changeLevel(int nxt){
-        tryCancel();
+        if(taskLeft != null)
+        {
+            taskLeft.cancel();
+            taskRight.cancel();
+            taskBottom.cancel();
+        }
         edges.clear();
         
+        kochLeft = new KochFractal();
+        kochRight = new KochFractal();
+        kochBottom = new KochFractal();
+        
+        changeLevels(nxt);
+        
         cnt = 0;
+        
         taskLeft = new kochTask("Left",this, kochLeft);
         taskBottom = new kochTask("Bottom",this, kochRight);
         taskRight = new kochTask("Right",this, kochBottom);
@@ -59,18 +77,15 @@ public class KochManager
         ts2 = new TimeStamp();
         ts2.setBegin();
         
-        new Thread(taskLeft).start();
-        new Thread(taskBottom).start();
-        new Thread(taskRight).start();
-        
-        changeLevels(nxt);
+        new Thread(taskLeft,"ThLeft").start();
+        new Thread(taskBottom,"ThBottom").start();
+        new Thread(taskRight,"ThRight").start();
         
         ts = new TimeStamp();
         ts.setBegin();
         
          ts2.setEnd();
          application.setTextCalc(ts2.toString());
-         application.requestDrawEdges();
     }
    
     public synchronized void add()
@@ -112,18 +127,5 @@ public class KochManager
         edges.add(e);
         Edge e1 = new Edge(e.X1,e.Y1,e.X2,e.Y2,Color.WHITE);
         application.drawOneEdge(e1);
-    }
-
-    public void tryCancel() {
-        try{
-            taskLeft.cancel();
-            taskRight.cancel();
-            taskBottom.cancel();
-            taskLeft = null;
-            taskRight = null;
-            taskBottom = null;
-        }
-        catch(NullPointerException  ex){
-        }
     }
 }
