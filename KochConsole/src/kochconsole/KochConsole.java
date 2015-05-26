@@ -21,7 +21,7 @@ public class KochConsole {
         KochObserver kobserver = new KochObserver();
         kochFractal.addObserver(kobserver);
         
-        kochFractal.setLevel(2);
+        kochFractal.setLevel(1);
         kochFractal.generateLeftEdge();
         kochFractal.generateBottomEdge();
         kochFractal.generateRightEdge();

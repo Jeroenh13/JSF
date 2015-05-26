@@ -20,7 +20,6 @@ public class KochObserver implements Observer{
         Edge e = (Edge)arg;
         System.out.println("Startpunt = " + e.X1 + " - " + e.Y1);
         System.out.println("Eindpunt = " + e.X2 + " - " + e.Y2);
-        System.out.println(" ");
     }
     
 }
