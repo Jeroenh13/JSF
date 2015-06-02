@@ -203,7 +203,8 @@ public class JSF31KochFractalFX extends Application {
     }
     
     private void readBinaryNoBuffer(ActionEvent event) {
-        kochManager.readBinary(false);
+        kochManager.readMMB();
+        //kochManager.readBinary(false);
     }
     
     private void readBinaryWithBuffer(ActionEvent event) {

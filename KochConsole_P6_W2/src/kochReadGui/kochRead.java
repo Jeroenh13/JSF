@@ -203,7 +203,11 @@ public class kochRead {
             System.out.println(e.getMessage());
             return;
         }
-        while (out.hasRemaining()) {
+        
+        int line = out.getInt();
+        application.setTextLevel("Level: ".concat(Integer.toString(line)));
+        
+        while (out.remaining() >= 36) {
             Edge e = new Edge(
                     out.getDouble(),
                     out.getDouble(),

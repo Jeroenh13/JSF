@@ -40,7 +40,7 @@ public class MemoryMappedFile implements Observer {
     public static void main(String[] args) {
         System.out.println("MemoryMappedBuffer!");
         System.out.println("Which level needs to be generated?");
-        TekstNoBuffer kConsole = new TekstNoBuffer();
+        MemoryMappedFile kConsole = new MemoryMappedFile();
         kConsole.SaveToFile("/hddJeroen/kochFiles/MemoryMappedFile");
         System.out.println("Done!");
     }
@@ -72,7 +72,7 @@ public class MemoryMappedFile implements Observer {
         try{
         ras = new RandomAccessFile(dir, "rw");
         fc = ras.getChannel();
-        out = fc.map(FileChannel.MapMode.READ_WRITE, 0, fc.size());
+        out = fc.map(FileChannel.MapMode.READ_WRITE, 0, 10000000);
         }
         catch(Exception e){
             System.out.println(e.getMessage());
