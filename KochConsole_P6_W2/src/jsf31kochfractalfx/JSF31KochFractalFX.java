@@ -151,6 +151,16 @@ public class JSF31KochFractalFX extends Application {
             }
         });
         grid.add(buttonReadBinaryWithBuffer, 9, 6);
+        
+        Button buttonReadFileWithMMBuffer = new Button();
+        buttonReadFileWithMMBuffer.setText("Read file with MMbuffer");
+        buttonReadFileWithMMBuffer.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                readFileWithMMBuffer(event);
+            }
+        });
+        grid.add(buttonReadFileWithMMBuffer, 8, 7);
 
         // Add mouse clicked event to Koch panel
         kochPanel.addEventHandler(MouseEvent.MOUSE_CLICKED,
@@ -203,12 +213,15 @@ public class JSF31KochFractalFX extends Application {
     }
     
     private void readBinaryNoBuffer(ActionEvent event) {
-        kochManager.readMMB();
-        //kochManager.readBinary(false);
+        kochManager.readBinary(false);
     }
     
     private void readBinaryWithBuffer(ActionEvent event) {
         kochManager.readBinary(true);
+    }
+    
+    private void readFileWithMMBuffer(ActionEvent event){
+            kochManager.readMMB();
     }
 
     public void clearKochPanel() {
