@@ -15,6 +15,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -132,20 +135,16 @@ public class kochRead {
                 int line = (int) in.readObject();
                 application.setTextLevel("Level: ".concat(Integer.toString(line)));
 
-                while(true)
-                {
+                while (true) {
                     Object o;
-                    try
-                    {
+                    try {
                         o = in.readObject();
-                    }
-                    catch(EOFException e){
+                    } catch (EOFException e) {
                         break;
                     }
-                    if(o instanceof Edge)
-                    {
+                    if (o instanceof Edge) {
                         Edge temp = (Edge) o;
-                        edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));   
+                        edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));
                     }
                 }
                 in.close();
@@ -161,25 +160,20 @@ public class kochRead {
                 ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(f)));
                 int line = (int) in.readObject();
                 application.setTextLevel("Level: ".concat(Integer.toString(line)));
-                
-                while(true)
-                {
+
+                while (true) {
                     Object o;
-                    try
-                    {
+                    try {
                         o = in.readObject();
-                    }
-                    catch(EOFException e){
+                    } catch (EOFException e) {
                         break;
                     }
-                    if(o instanceof Edge)
-                    {
+                    if (o instanceof Edge) {
                         Edge temp = (Edge) o;
-                        edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));   
+                        edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));
                     }
                 }
-                
-                    
+
                 in.close();
             } catch (IOException ex) {
                 Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
@@ -187,6 +181,43 @@ public class kochRead {
                 Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        ts2.setEnd();
+        application.setTextCalc(ts2.toString());
+        application.requestDrawEdges();
+    }
+
+    public void readMMB() {
+        ts2 = new TimeStamp();
+        ts2.setBegin();
+        edges = new ArrayList<Edge>();
+
+        RandomAccessFile ras;
+        FileChannel fc;
+        MappedByteBuffer out;
+
+        try {
+            ras = new RandomAccessFile("/hddJeroen/kochFiles/MemoryMappedFile", "rw");
+            fc = ras.getChannel();
+            out = fc.map(FileChannel.MapMode.READ_WRITE, 0, fc.size());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+        while (out.hasRemaining()) {
+            Edge e = new Edge(
+                    out.getDouble(),
+                    out.getDouble(),
+                    out.getDouble(),
+                    out.getDouble(),
+                    new Color(
+                            out.getDouble(),
+                            out.getDouble(),
+                            out.getDouble(),
+                            1)
+            );
+            edges.add(e);
+        }
+
         ts2.setEnd();
         application.setTextCalc(ts2.toString());
         application.requestDrawEdges();
