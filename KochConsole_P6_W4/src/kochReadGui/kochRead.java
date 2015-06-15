@@ -46,18 +46,10 @@ public class kochRead {
     private TimeStamp ts;
     private TimeStamp ts2;
     ArrayList<Edge> edges;
-    WatchService watcher;
     private FileLock lock = null;
 
     public kochRead(JSF31KochFractalFX application) {
         this.application = application;
-        Path dir = Paths.get("/");
-        try {
-            watcher = FileSystems.getDefault().newWatchService();
-            WatchKey key = dir.register(watcher, ENTRY_MODIFY);
-        } catch (IOException x) {
-            System.err.println(x);
-        }
     }
 
     public void drawEdges() {
@@ -78,6 +70,7 @@ public class kochRead {
     public void readFile(boolean b) {
         ts2 = new TimeStamp();
         ts2.setBegin();
+        
         edges = new ArrayList<Edge>();
         //no buffer
         if (!b) {
