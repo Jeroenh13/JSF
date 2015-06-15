@@ -30,10 +30,12 @@ public class MemoryMappedFile implements Observer {
     private RandomAccessFile ras;
     private FileChannel fc;
     private MappedByteBuffer out;
+    private int edgeCount;
 
     public MemoryMappedFile() {
         scanner = new Scanner(System.in);
         kochFractal = new KochFractal();
+        edgeCount = 0;
         kochFractal.addObserver(this);
     }
 
@@ -69,24 +71,26 @@ public class MemoryMappedFile implements Observer {
             System.out.println(e.getMessage());
         }
         
+        kochFractal.setLevel(selectedLevel);
         try{
         ras = new RandomAccessFile(dir, "rw");
         fc = ras.getChannel();
-        out = fc.map(FileChannel.MapMode.READ_WRITE, 0, 10000000);
+        out = fc.map(FileChannel.MapMode.READ_WRITE, 0, kochFractal.getNrOfEdges()*7*8+100);
         }
         catch(Exception e){
             System.out.println(e.getMessage());
             return;
         }
         out.putInt(selectedLevel);
+        out.putInt(edgeCount);
         
-        kochFractal.setLevel(selectedLevel);
         kochFractal.generateLeftEdge();
         kochFractal.generateBottomEdge();
         kochFractal.generateRightEdge();
         ts.setEnd();
         System.out.println(ts.toString());
     }
+    
     @Override
     public synchronized void update(Observable o, Object arg) {
         Edge e = (Edge) arg;
@@ -98,5 +102,9 @@ public class MemoryMappedFile implements Observer {
         out.putDouble(e.color.getRed());
         out.putDouble(e.color.getGreen());
         out.putDouble(e.color.getBlue());
+        
+        out.putInt(1,edgeCount);
+        
+        edgeCount++;
     }
 }

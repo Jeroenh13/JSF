@@ -1,5 +1,3 @@
-
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -76,86 +74,67 @@ public class kochRead {
     }
 
     public void readFile(boolean b) {
-        for (;;) {
-            WatchKey key;
+        ts2 = new TimeStamp();
+        ts2.setBegin();
+        edges = new ArrayList<Edge>();
+        //no buffer
+        if (!b) {
             try {
-                key = watcher.take();
-            } catch (InterruptedException e) {
-                return;
-            }
-            for (WatchEvent<?> event : key.pollEvents()) {
-                WatchEvent.Kind kind = event.kind();
+                Path f = Paths.get("/hddJeroen/kochFiles/TekstNoBuffer");
+                List<String> fileList = Files.readAllLines(f);
+                for (String s : fileList) {
+                    if ("Se".equals(s.substring(0, 2))) {
+                        application.setTextLevel("Level: ".concat(s.substring(16)));
+                    } else {
+                        String[] edge = s.split("([,])");
 
-                if (kind == OVERFLOW) {
-                    continue;
-                }
-
-                if (kind == ENTRY_MODIFY) {
-
-                    ts2 = new TimeStamp();
-                    ts2.setBegin();
-                    edges = new ArrayList<Edge>();
-                    //no buffer
-                    if (!b) {
-                        try {
-                            Path f = Paths.get("/hddJeroen/kochFiles/TekstNoBuffer");
-                            List<String> fileList = Files.readAllLines(f);
-                            for (String s : fileList) {
-                                if ("Se".equals(s.substring(0, 2))) {
-                                    application.setTextLevel("Level: ".concat(s.substring(16)));
-                                } else {
-                                    String[] edge = s.split("([,])");
-
-                                    Double d1 = Double.parseDouble(edge[4]);
-                                    Double d2 = Double.parseDouble(edge[5]);
-                                    Double d3 = Double.parseDouble(edge[6]);
-                                    Color c = Color.hsb(Double.parseDouble(edge[4]), Double.parseDouble(edge[5]), Double.parseDouble(edge[6]));
-                                    Edge e = new Edge(Double.parseDouble(edge[0]), Double.parseDouble(edge[1]), Double.parseDouble(edge[2]), Double.parseDouble(edge[3]), c);
-                                    edges.add(e);
-                                }
-                            }
-                        } catch (FileNotFoundException ex) {
-                            Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (IOException ex) {
-                            Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    } //with buffer
-                    else {
-                        FileReader reader;
-                        BufferedReader buffer;
-                        try {
-                            reader = new FileReader("/hddJeroen/kochFiles/TekstWBuffer");
-                            buffer = new BufferedReader(reader);
-                            String line;
-                            while ((line = buffer.readLine()) != null) {
-                                if ("Se".equals(line.substring(0, 2))) {
-                                    application.setTextLevel("Level: ".concat(line.substring(16)));
-                                } else {
-                                    String[] edge = line.split("([,])");
-
-                                    Double d1 = Double.parseDouble(edge[4]);
-                                    Double d2 = Double.parseDouble(edge[5]);
-                                    Double d3 = Double.parseDouble(edge[6]);
-                                    Color c = Color.hsb(Double.parseDouble(edge[4]), Double.parseDouble(edge[5]), Double.parseDouble(edge[6]));
-                                    Edge e = new Edge(Double.parseDouble(edge[0]), Double.parseDouble(edge[1]), Double.parseDouble(edge[2]), Double.parseDouble(edge[3]), c);
-                                    edges.add(e);
-                                }
-                            }
-
-                            buffer.close();
-                        } catch (FileNotFoundException ex) {
-                            Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (IOException ex) {
-                            Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        Double d1 = Double.parseDouble(edge[4]);
+                        Double d2 = Double.parseDouble(edge[5]);
+                        Double d3 = Double.parseDouble(edge[6]);
+                        Color c = Color.hsb(Double.parseDouble(edge[4]), Double.parseDouble(edge[5]), Double.parseDouble(edge[6]));
+                        Edge e = new Edge(Double.parseDouble(edge[0]), Double.parseDouble(edge[1]), Double.parseDouble(edge[2]), Double.parseDouble(edge[3]), c);
+                        edges.add(e);
                     }
-
-                    ts2.setEnd();
-                    application.setTextCalc(ts2.toString());
-                    application.requestDrawEdges();
                 }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } //with buffer
+        else {
+            FileReader reader;
+            BufferedReader buffer;
+            try {
+                reader = new FileReader("/hddJeroen/kochFiles/TekstWBuffer");
+                buffer = new BufferedReader(reader);
+                String line;
+                while ((line = buffer.readLine()) != null) {
+                    if ("Se".equals(line.substring(0, 2))) {
+                        application.setTextLevel("Level: ".concat(line.substring(16)));
+                    } else {
+                        String[] edge = line.split("([,])");
+
+                        Double d1 = Double.parseDouble(edge[4]);
+                        Double d2 = Double.parseDouble(edge[5]);
+                        Double d3 = Double.parseDouble(edge[6]);
+                        Color c = Color.hsb(Double.parseDouble(edge[4]), Double.parseDouble(edge[5]), Double.parseDouble(edge[6]));
+                        Edge e = new Edge(Double.parseDouble(edge[0]), Double.parseDouble(edge[1]), Double.parseDouble(edge[2]), Double.parseDouble(edge[3]), c);
+                        edges.add(e);
+                    }
+                }
+
+                buffer.close();
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        ts2.setEnd();
+        application.setTextCalc(ts2.toString());
+        application.requestDrawEdges();
     }
 
     public void readBinary(boolean b) {
@@ -226,6 +205,8 @@ public class kochRead {
         ts2.setBegin();
         edges = new ArrayList<Edge>();
 
+        int count = 0;
+
         RandomAccessFile ras;
         FileChannel fc;
         MappedByteBuffer out;
@@ -242,7 +223,9 @@ public class kochRead {
         int line = out.getInt();
         application.setTextLevel("Level: ".concat(Integer.toString(line)));
 
-        while (out.remaining() >= 36) {
+        int edgeCount = out.getInt();
+        int i = 0;
+        while (edgeCount >= i && out.remaining() >= 36) {
             Edge e = new Edge(
                     out.getDouble(),
                     out.getDouble(),
@@ -255,6 +238,7 @@ public class kochRead {
                             1)
             );
             edges.add(e);
+            i++;
         }
 
         ts2.setEnd();
