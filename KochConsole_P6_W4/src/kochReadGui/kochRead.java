@@ -70,7 +70,7 @@ public class kochRead {
     public void readFile(boolean b) {
         ts2 = new TimeStamp();
         ts2.setBegin();
-        
+
         edges = new ArrayList<Edge>();
         //no buffer
         if (!b) {
@@ -165,25 +165,34 @@ public class kochRead {
         } //with buffer
         else {
             try {
-                File f = new File("/hddJeroen/kochFiles/BinaryWBuffer");
-                ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(f)));
-                int line = (int) in.readObject();
-                application.setTextLevel("Level: ".concat(Integer.toString(line)));
+                Path p = Paths.get("/Github/jsf/KochConsole_P6_W4/");
+                kochDirWatchable watcher = new kochDirWatchable(p, false);
 
-                while (true) {
-                    Object o;
-                    try {
-                        o = in.readObject();
-                    } catch (EOFException e) {
-                        break;
+                Thread t = new Thread(watcher);
+                t.start();
+
+                if (!watcher.getDone()) {
+                    File f = new File("/Github/jsf/KochConsole_P6_W4/BinaryWBuffer.bin");
+
+                    ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(f)));
+                    int line = (int) in.readObject();
+                    application.setTextLevel("Level: ".concat(Integer.toString(line)));
+
+                    while (true) {
+                        Object o;
+                        try {
+                            o = in.readObject();
+                        } catch (EOFException e) {
+                            break;
+                        }
+                        if (o instanceof Edge) {
+                            Edge temp = (Edge) o;
+                            edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));
+                        }
                     }
-                    if (o instanceof Edge) {
-                        Edge temp = (Edge) o;
-                        edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));
-                    }
+
+                    in.close();
                 }
-
-                in.close();
             } catch (IOException ex) {
                 Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {

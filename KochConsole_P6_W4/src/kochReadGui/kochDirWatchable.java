@@ -10,7 +10,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 import static java.nio.file.LinkOption.*;
 import java.nio.file.attribute.*;
 import java.io.*;
-import java.util.*; 
+import java.util.*;
 
 /**
  *
@@ -22,6 +22,7 @@ public class kochDirWatchable implements Runnable {
     private final Map<WatchKey, Path> keys; // the map of WatchKey's and belonging Path
     private final boolean recursive;
     private boolean trace = false;
+    private boolean done = false;
 
     /**
      * Creates a WatchService and registers the given directory
@@ -111,6 +112,8 @@ public class kochDirWatchable implements Runnable {
                 System.err.println("WatchKey not recognized!!");
                 continue;
             }
+            
+            int cnt = 0;
 
             for (WatchEvent<?> event : key.pollEvents()) {
                 // get event kind
@@ -156,5 +159,11 @@ public class kochDirWatchable implements Runnable {
                 }
             }
         }
+        done = true;
+
+    }
+
+    public boolean getDone() {
+        return done;
     }
 }

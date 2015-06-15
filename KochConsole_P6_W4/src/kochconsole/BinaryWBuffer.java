@@ -42,7 +42,7 @@ public class BinaryWBuffer implements Observer {
         System.out.println("With Buffer");
         System.out.println("Which level needs to be generated?");
         BinaryWBuffer kConsole = new BinaryWBuffer();
-        kConsole.SaveToFile("/hddJeroen/kochFiles/BinaryWBuffer");
+        kConsole.SaveToFile("/Github/jsf/KochConsole_P6_W4/BinaryWBuffer.bin");
         System.out.println("Done!");
     }
 
