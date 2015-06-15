@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,10 +47,11 @@ public class kochRead {
     private TimeStamp ts2;
     ArrayList<Edge> edges;
     WatchService watcher;
+    private FileLock lock = null;
 
     public kochRead(JSF31KochFractalFX application) {
         this.application = application;
-        Path dir = Paths.get("/hddJeroen/kochFiles/");
+        Path dir = Paths.get("/");
         try {
             watcher = FileSystems.getDefault().newWatchService();
             WatchKey key = dir.register(watcher, ENTRY_MODIFY);
@@ -212,37 +214,46 @@ public class kochRead {
         MappedByteBuffer out;
 
         try {
-            ras = new RandomAccessFile("/hddJeroen/kochFiles/MemoryMappedFile", "rw");
+            ras = new RandomAccessFile("/MappedFile.bin", "r");
             fc = ras.getChannel();
-            out = fc.map(FileChannel.MapMode.READ_WRITE, 0, fc.size());
+            out = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+
+            lock = fc.lock(0, 8, true);
+            int edgeCount = out.getInt();
+            application.setTextNrEdges(Integer.toString(edgeCount));
+
+            int line = out.getInt();
+            application.setTextLevel("Level: ".concat(Integer.toString(line)));
+
+            lock.release();
+
+            int lockEdgeLength = (4 * 8) + (3 * 8);
+            int start = 8;
+            for (int i = 0; i < edgeCount; i++) {
+                start += lockEdgeLength;
+                lock = fc.lock(start, lockEdgeLength, true);
+                double X1 = out.getDouble();
+                double Y1 = out.getDouble();
+                double X2 = out.getDouble();
+                double Y2 = out.getDouble();
+                double red = out.getDouble();
+                double green = out.getDouble();
+                double blue = out.getDouble();
+
+                Edge e = new Edge(X1, Y1, X2, Y2,
+                        new Color(red, green, blue, 1)
+                );
+                lock.release();
+                edges.add(e);
+            }
+            ts2.setEnd();
+            application.setTextCalc(ts2.toString());
+            application.requestDrawEdges();
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return;
         }
 
-        int line = out.getInt();
-        application.setTextLevel("Level: ".concat(Integer.toString(line)));
-
-        int edgeCount = out.getInt();
-        int i = 0;
-        while (edgeCount >= i && out.remaining() >= 36) {
-            Edge e = new Edge(
-                    out.getDouble(),
-                    out.getDouble(),
-                    out.getDouble(),
-                    out.getDouble(),
-                    new Color(
-                            out.getDouble(),
-                            out.getDouble(),
-                            out.getDouble(),
-                            1)
-            );
-            edges.add(e);
-            i++;
-        }
-
-        ts2.setEnd();
-        application.setTextCalc(ts2.toString());
-        application.requestDrawEdges();
     }
 }
