@@ -151,7 +151,7 @@ public class JSF31KochFractalFX extends Application {
             }
         });
         grid.add(buttonReadBinaryWithBuffer, 9, 6);
-        
+
         Button buttonReadFileWithMMBuffer = new Button();
         buttonReadFileWithMMBuffer.setText("Read file with MMbuffer");
         buttonReadFileWithMMBuffer.setOnAction(new EventHandler<ActionEvent>() {
@@ -207,21 +207,21 @@ public class JSF31KochFractalFX extends Application {
     private void readFileNoBuffer(ActionEvent event) {
         kochManager.readFile(false);
     }
-    
+
     private void readFileWithBuffer(ActionEvent event) {
         kochManager.readFile(true);
     }
-    
+
     private void readBinaryNoBuffer(ActionEvent event) {
         kochManager.readBinary(false);
     }
-    
+
     private void readBinaryWithBuffer(ActionEvent event) {
         kochManager.readBinary(true);
     }
-    
-    private void readFileWithMMBuffer(ActionEvent event){
-            kochManager.readMMB();
+
+    private void readFileWithMMBuffer(ActionEvent event) {
+        kochManager.readMMB();
     }
 
     public void clearKochPanel() {
@@ -232,26 +232,33 @@ public class JSF31KochFractalFX extends Application {
     }
 
     public void drawEdge(Edge e) {
-        // Graphics
-        GraphicsContext gc = kochPanel.getGraphicsContext2D();
+        Platform.runLater(new Runnable() {
 
-        // Adjust edge for zoom and drag
-        Edge e1 = edgeAfterZoomAndDrag(e);
+            @Override
+            public void run() {
+                // Graphics
+                GraphicsContext gc = kochPanel.getGraphicsContext2D();
 
-        // Set line color
-        gc.setStroke(e1.color);
+                // Adjust edge for zoom and drag
+                Edge e1 = edgeAfterZoomAndDrag(e);
 
-        // Set line width depending on level
-        if (currentLevel <= 3) {
-            gc.setLineWidth(2.0);
-        } else if (currentLevel <= 5) {
-            gc.setLineWidth(1.5);
-        } else {
-            gc.setLineWidth(1.0);
-        }
+                // Set line color
+                gc.setStroke(e1.color);
 
-        // Draw line
-        gc.strokeLine(e1.X1, e1.Y1, e1.X2, e1.Y2);
+                // Set line width depending on level
+                if (currentLevel <= 3) {
+                    gc.setLineWidth(2.0);
+                } else if (currentLevel <= 5) {
+                    gc.setLineWidth(1.5);
+                } else {
+                    gc.setLineWidth(1.0);
+                }
+                // Draw line
+                gc.strokeLine(e1.X1, e1.Y1, e1.X2, e1.Y2);
+            }
+
+        });
+
     }
 
     public void setTextNrEdges(String text) {
@@ -273,7 +280,7 @@ public class JSF31KochFractalFX extends Application {
             }
         });
     }
-    
+
     public void setTextLevel(String text) {
         final String t = text;
         Platform.runLater(new Runnable() {

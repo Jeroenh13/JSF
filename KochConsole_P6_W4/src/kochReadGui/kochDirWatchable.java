@@ -62,7 +62,7 @@ public class kochDirWatchable implements Runnable {
      */
     private void register(Path dir) throws IOException {
 
-        WatchKey key = dir.register(this.watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+        WatchKey key = dir.register(this.watcher, ENTRY_CREATE);
         if (trace) {
             Path prev = keys.get(key);
             if (prev == null) {
@@ -133,18 +133,12 @@ public class kochDirWatchable implements Runnable {
                 // Path filename = (Path) event.context();
                 // this leads to the same result as ev.context() below
                 // print out event
-                System.out.format("%s: %s\n", event.kind().name(), child);
-
-                // if directory is created, and watching recursively, then
-                // register it and its sub-directories
-                if (recursive && (kind == ENTRY_CREATE)) {
-                    try {
-                        if (Files.isDirectory(child, NOFOLLOW_LINKS)) {
-                            registerAll(child);
-                        }
-                    } catch (IOException x) {
-                        // ignore to keep sample readable
-                    }
+                //System.out.format("%s: %s\n", event.kind().name(), child);
+                
+                if(kind == ENTRY_CREATE && child.toString().contains("done"))
+                {
+                    System.out.println("DONE");
+                    done = true;
                 }
             }
 
@@ -159,8 +153,6 @@ public class kochDirWatchable implements Runnable {
                 }
             }
         }
-        done = true;
-
     }
 
     public boolean getDone() {

@@ -165,37 +165,37 @@ public class kochRead {
         } //with buffer
         else {
             try {
-                Path p = Paths.get("/Github/jsf/KochConsole_P6_W4/");
+                Path p = Paths.get("/");
                 kochDirWatchable watcher = new kochDirWatchable(p, false);
 
                 Thread t = new Thread(watcher);
                 t.start();
+                while (true) {
+                    if (watcher.getDone()) {
+                        File f = new File("/BinaryWBuffer.bin");
+                        ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(f)));
+                        int line = (int) in.readObject();
+                        application.setTextLevel("Level: ".concat(Integer.toString(line)));
 
-                if (!watcher.getDone()) {
-                    File f = new File("/Github/jsf/KochConsole_P6_W4/BinaryWBuffer.bin");
-
-                    ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(f)));
-                    int line = (int) in.readObject();
-                    application.setTextLevel("Level: ".concat(Integer.toString(line)));
-
-                    while (true) {
-                        Object o;
-                        try {
-                            o = in.readObject();
-                        } catch (EOFException e) {
-                            break;
+                        while (true) {
+                            Object o;
+                            try {
+                                o = in.readObject();
+                            } catch (EOFException e) {
+                                break;
+                            }
+                            if (o instanceof Edge) {
+                                Edge temp = (Edge) o;
+                                edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));
+                                //System.out.println(edges.size());
+                            }
                         }
-                        if (o instanceof Edge) {
-                            Edge temp = (Edge) o;
-                            edges.add(new Edge(temp.X1, temp.Y1, temp.X2, temp.Y2, Color.WHITE));
-                        }
+
+                        in.close();
                     }
-
-                    in.close();
+                    break;
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -213,48 +213,69 @@ public class kochRead {
 
         RandomAccessFile ras;
         FileChannel fc;
-        MappedByteBuffer out;
 
+        application.clearKochPanel();
         try {
             ras = new RandomAccessFile("/MappedFile.bin", "r");
             fc = ras.getChannel();
-            out = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 
-            lock = fc.lock(0, 8, true);
-            int edgeCount = out.getInt();
-            application.setTextNrEdges(Integer.toString(edgeCount));
+            new Thread(new Runnable() {
+                boolean finished = false;
+                int c = 0;
 
-            int line = out.getInt();
-            application.setTextLevel("Level: ".concat(Integer.toString(line)));
+                @Override
+                public void run() {
+                    try {
+                        MappedByteBuffer out;
+                        out = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+                        lock = fc.lock(0, 8, true);
+                        int edgeCount = out.getInt();
+                        application.setTextNrEdges(Integer.toString(edgeCount));
 
-            lock.release();
+                        int line = out.getInt();
+                        application.setTextLevel("Level: ".concat(Integer.toString(line)));
 
-            int lockEdgeLength = (4 * 8) + (3 * 8);
-            int start = 8;
-            for (int i = 0; i < edgeCount; i++) {
-                start += lockEdgeLength;
-                lock = fc.lock(start, lockEdgeLength, true);
-                double X1 = out.getDouble();
-                double Y1 = out.getDouble();
-                double X2 = out.getDouble();
-                double Y2 = out.getDouble();
-                double red = out.getDouble();
-                double green = out.getDouble();
-                double blue = out.getDouble();
+                        lock.release();
+                        while (!finished) {
+                            //while (c < edgeCount) {
+                            int lockEdgeLength = (4 * 8) + (3 * 8);
+                            int start = 8;
+                            start += lockEdgeLength;
+                            lock = fc.lock(start, lockEdgeLength, true);
+                            out.position(c * (7 * 8) + 8);
+                            double X1 = out.getDouble();
+                            double Y1 = out.getDouble();
+                            double X2 = out.getDouble();
+                            double Y2 = out.getDouble();
+                            double red = out.getDouble();
+                            double green = out.getDouble();
+                            double blue = out.getDouble();
 
-                Edge e = new Edge(X1, Y1, X2, Y2,
-                        new Color(red, green, blue, 1)
-                );
-                lock.release();
-                edges.add(e);
-            }
+                            Edge e = new Edge(X1, Y1, X2, Y2,
+                                    new Color(red, green, blue, 1)
+                            );
+                            edges.add(e);
+                            application.drawEdge(e);
+                            // Thread.sleep(1);
+                            c++;
+                            finished = (edgeCount == c);
+                            lock.release();
+
+                            lock = fc.lock(0, 4, true);
+                            edgeCount = out.getInt(0);
+                            lock.release();
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(kochRead.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+            }).start();
+
             ts2.setEnd();
             application.setTextCalc(ts2.toString());
-            application.requestDrawEdges();
-
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return;
         }
 
     }

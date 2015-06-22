@@ -34,7 +34,7 @@ public class BinaryWBuffer implements Observer {
         kochFractal = new KochFractal();
         kochFractal.addObserver(this);
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -42,11 +42,9 @@ public class BinaryWBuffer implements Observer {
         System.out.println("With Buffer");
         System.out.println("Which level needs to be generated?");
         BinaryWBuffer kConsole = new BinaryWBuffer();
-        kConsole.SaveToFile("/Github/jsf/KochConsole_P6_W4/BinaryWBuffer.bin");
+        kConsole.SaveToFile("/BinaryWBuffer.bin");
         System.out.println("Done!");
     }
-
-    
 
     public void SaveToFile(String dir) {
         TimeStamp ts = new TimeStamp();
@@ -66,11 +64,10 @@ public class BinaryWBuffer implements Observer {
         if (f.exists()) {
             f.delete();
         }
-        try{
+        try {
             f.createNewFile();
-        }
-        catch(IOException ex){
-            
+        } catch (IOException ex) {
+
         }
         try {
             fos = new FileOutputStream(f);
@@ -91,15 +88,23 @@ public class BinaryWBuffer implements Observer {
         } catch (IOException ex) {
 
         }
+        File fileDone = new File("/done.txt");
+        if (fileDone.exists()) {
+            fileDone.delete();
+        }
+        try {
+            fileDone.createNewFile();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public void update(Observable o, Object arg) {
         Edge e = (Edge) arg;
         try {
-            Edge e2 = new Edge(e.X1,e.Y1,e.X2,e.Y2);
+            Edge e2 = new Edge(e.X1, e.Y1, e.X2, e.Y2);
             out.writeObject(e2);
-            out.writeObject("\n");
         } catch (IOException ex) {
 
         }
